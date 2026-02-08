@@ -2,13 +2,17 @@ import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, ContextTypes
 
-# bothost обычно кладёт токен сюда
+# bothost сам подставляет токен
 TOKEN = (
-  os.getenv("API_TOKEN")
+    os.getenv("BOT_TOKEN")
+    or os.getenv("BOT_API_TOKEN")
+    or os.getenv("TELEGRAM_BOT_TOKEN")
+    or os.getenv("API_TOKEN")
+    or os.getenv("TOKEN")
 )
 
 if not TOKEN:
-    raise RuntimeError("Токен бота не найден в переменных окружения")
+    raise RuntimeError("Токен не найден в переменных окружения")
 
 IMAGE_URL = "https://example.com/image.png"
 
@@ -26,11 +30,3 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         photo=IMAGE_URL,
         caption=TEXT
     )
-
-def main():
-    app = Application.builder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.run_polling()
-
-if __name__ == "__main__":
-    main()
