@@ -47,32 +47,95 @@ IMAGE_URL = "https://example.com/image.png"
 # /start
 # =========================================================
 
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    CallbackQueryHandler,
+    ContextTypes,
+)
+
+
 async def start(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE
 ):
+    keyboard = [
+        [
+            InlineKeyboardButton(
+                "🇷🇺 Санкт-Петербург",
+                callback_data="region_spb"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "🌐 Весь СПб",
+                callback_data="region_all_spb"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "📍 Другой регион",
+                callback_data="region_other"
+            )
+        ],
+        [
+            InlineKeyboardButton(
+                "⏭ Пропустить",
+                callback_data="region_skip"
+            )
+        ],
+    ]
+
     await update.message.reply_text(
+        """
+🚨 <b>Внимание, П!</b>
+
+Я буду предупреждать тебя об
+экстренных оповещениях.
+
+📍 Где отслеживать сообщения?
+
+Выбери регион ниже:
+""",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(keyboard),
+    )
+
+
+async def choose_region(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE
+):
+    query = update.callback_query
+
+    await query.answer()
+
+    regions = {
+        "region_spb": "Санкт-Петербург",
+        "region_all_spb": "Весь Санкт-Петербург",
+        "region_other": "Другой регион",
+        "region_skip": "Весь Санкт-Петербург",
+    }
+
+    region = regions[query.data]
+
+    context.user_data["region"] = region
+
+    await query.edit_message_text(
         f"""
-🚨 <b>{BOT_NAME}</b>
+✅ <b>Регион выбран!</b>
 
-Привет!
+📍 {region}
 
-Я могу предупреждать тебя о сообщениях
-о сиренах, тревогах и чрезвычайных ситуациях.
+Теперь бот будет использовать этот
+регион для фильтрации оповещений.
 
-📍 Сначала выбери регион:
-
-🇷🇺 Санкт-Петербург
-🌐 Весь Санкт-Петербург
-📍 Другой регион
-
-После этого можно подключить
-Telegram-канал для дополнительного
-мониторинга.
-
-⚠️ Я являюсь информационным ботом.
-В экстренной ситуации проверяй
-официальные источники.
+Изменить выбор можно через /start.
 """,
         parse_mode="HTML",
     )
