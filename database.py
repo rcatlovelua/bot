@@ -1,8 +1,12 @@
 import aiosqlite
 
+import os
 
-DB_PATH = "data.db"
+DATA_DIR = os.getenv("DATA_DIR", "/app/data")
 
+os.makedirs(DATA_DIR, exist_ok=True)
+
+DB_PATH = os.path.join(DATA_DIR, "bot.db")
 
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
@@ -115,3 +119,4 @@ async def get_all_enabled_users():
             }
             for row in rows
         ]
+        print("ДБ:ОК ✅")
